@@ -1,0 +1,35 @@
+	int len;
+	  char buf[1024]={0};
+	  recv_n(sfd,(char *)&len,4);//读文件名
+	  recv_n(sfd,buf,len);
+	  off_t file_size;
+	  double download=0;
+	  recv_n(sfd,(char *)&len,4);//读文件大小
+	  recv_n(sfd,(char *)&file_size,len);
+	  int fd=open(buf,O_WRONLY|O_CREAT,0660);
+	  error_check(-1,fd,"open");
+	  time_t start=time(NULL);
+	  time_t end=time(NULL);
+	  while(1)
+	  {
+	  ret=recv_n(sfd,(char *)&len,4);
+	  if(ret!=-1&&len>0)
+	  {
+	  download+=len;
+	  recv_n(sfd,buf,len);
+	  write(fd,buf,len);
+	  end=time(NULL);
+	  if(end-start>=1)
+	  {
+	  printf("it has download %5.1f%c\r",download/file_size*100,'%');
+	  fflush(stdout);
+	  start=end;
+	  }
+	  }
+	  else
+	  {
+	  printf("it has download %5.1f%c\n",download/file_size*100,'%');
+	  break;
+	  }
+	  }
+	  close(fd);
